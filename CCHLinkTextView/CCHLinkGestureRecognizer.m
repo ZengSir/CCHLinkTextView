@@ -95,7 +95,9 @@
     self.initialPoint = [touch locationInView:self.view];
     self.state = UIGestureRecognizerStateBegan;
     
-    self.timer = [NSTimer scheduledTimerWithTimeInterval:self.minimumPressDuration target:self selector:@selector(longPressed:) userInfo:nil repeats:NO];
+    if (_longPressGestureEnabled) {
+        self.timer = [NSTimer scheduledTimerWithTimeInterval:self.minimumPressDuration target:self selector:@selector(longPressed:) userInfo:nil repeats:NO];
+    }
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
@@ -132,4 +134,13 @@
     return isClose;
 }
 
+- (void)setLongPressGestureEnabled:(BOOL)longPressGestureEnabled {
+    _longPressGestureEnabled = longPressGestureEnabled;
+    if (!longPressGestureEnabled) {
+        [self.timer invalidate];
+        self.timer = nil;
+    }
+}
+
 @end
+

@@ -55,14 +55,14 @@ extern NSString *const CCHLinkAttributeName;
  to disable rounder corners (default = 0 points). */
 @property (nonatomic) CGFloat linkCornerRadius;
 
-/** 
+/**
  For the given ranges, enumerates all view rectangles that cover each range.
  @param ranges array of ranges.
  @param block block that's called for each view rect.
  */
 - (void)enumerateViewRectsForRanges:(NSArray *)ranges usingBlock:(void (^)(CGRect rect, NSRange range, BOOL *stop))block;
 
-/** 
+/**
  Enumerates all ranges with a link for the given point.
  @param location point in this view's coordinates.
  @param block block that's called for every link range that was found.
@@ -70,3 +70,4 @@ extern NSString *const CCHLinkAttributeName;
 - (BOOL)enumerateLinkRangesContainingLocation:(CGPoint)location usingBlock:(void (^)(NSRange range))block;
 
 @end
+

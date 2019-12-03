@@ -33,11 +33,11 @@ typedef enum {
     CCHLinkGestureRecognizerResultFailed
 } CCHLinkGestureRecognizerResult;
 
-/** 
- A discreet gesture recognizer that sends action messages for touch down 
+/**
+ A discreet gesture recognizer that sends action messages for touch down
  (UIGestureRecognizerStateBegan), touch up for a tap (UIGestureRecognizerStateRecognized,
  CCHLinkGestureRecognizerResultTap), touch up for a long press (UIGestureRecognizerStateRecognized,
- CCHLinkGestureRecognizerResultLongPress), and touch up when the gesture has failed 
+ CCHLinkGestureRecognizerResultLongPress), and touch up when the gesture has failed
  (UIGestureRecognizerStateRecognized, CCHLinkGestureRecognizerResultFailed).
  */
 @interface CCHLinkGestureRecognizer : UIGestureRecognizer
@@ -50,4 +50,10 @@ typedef enum {
 /** Result code of the gesture when the gesture has been recognized (state is UIGestureRecognizerStateRecognized). */
 @property (nonatomic, readonly) CCHLinkGestureRecognizerResult result;
 
+/**
+ *  设置长按手势是否启用
+ */
+@property (nonatomic) BOOL longPressGestureEnabled;
+
 @end
+

@@ -39,3 +39,4 @@
 - (void)linkTextView:(CCHLinkTextView *)linkTextView didLongPressLinkWithValue:(id)value;
 
 @end
+

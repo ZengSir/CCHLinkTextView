@@ -137,7 +137,7 @@ NSString *const CCHLinkAttributeName = @"CCHLinkAttributeName";
 - (void)setAttributedText:(NSAttributedString *)attributedText
 {
     NSMutableAttributedString *mutableAttributedText = [attributedText mutableCopy];
-    [mutableAttributedText enumerateAttribute:CCHLinkAttributeName inRange:NSMakeRange(0, attributedText.length) options:0 usingBlock:^(id value, NSRange range, BOOL *stop) {
+    [attributedText enumerateAttribute:CCHLinkAttributeName inRange:NSMakeRange(0, attributedText.length) options:0 usingBlock:^(id value, NSRange range, BOOL *stop) {
         if (value) {
             [mutableAttributedText addAttributes:self.linkTextAttributes range:range];
         }
@@ -266,14 +266,17 @@ NSString *const CCHLinkAttributeName = @"CCHLinkAttributeName";
         self.rangeValuesForTouchDown = [self didTouchDownAtLocation:location];
     } else if (recognizer.state == UIGestureRecognizerStateEnded) {
         NSAssert(self.rangeValuesForTouchDown != nil, @"Invalid touch down ranges");
-        
+        //这一句代码原本在控件里是在回调后重置的。但那样可能会crash，因为点击后可能刷新控件里的内容，造成回调后范围发生变化，导致闪退
+        [self didCancelTouchDownAtRangeValues:self.rangeValuesForTouchDown];
+
         if (recognizer.result == CCHLinkGestureRecognizerResultTap) {
             [self didTapAtRangeValues:self.rangeValuesForTouchDown];
         } else if (recognizer.result == CCHLinkGestureRecognizerResultLongPress) {
             [self didLongPressAtRangeValues:self.rangeValuesForTouchDown];
         }
         
-        [self didCancelTouchDownAtRangeValues:self.rangeValuesForTouchDown];
+        self.rangeValuesForTouchDown = nil;
+    } else if (recognizer.state == UIGestureRecognizerStateCancelled) {
         self.rangeValuesForTouchDown = nil;
     }
 }
@@ -293,7 +296,12 @@ NSString *const CCHLinkAttributeName = @"CCHLinkAttributeName";
         
         NSMutableAttributedString *attributedText = [self.attributedText mutableCopy];
         for (NSString *attribute in self.linkTextAttributes) {
-            [attributedText removeAttribute:attribute range:range];
+            if (range.location + range.length <= attributedText.length) {
+                [attributedText removeAttribute:attribute range:range];
+            } else {
+                NSLog(@"重置文本属性时，范围越界，很可能是文本发生变化导致");
+                return ;
+            }
         }
         [attributedText addAttributes:self.linkTextTouchAttributes range:range];
         [super setAttributedText:attributedText];
@@ -313,7 +321,12 @@ NSString *const CCHLinkAttributeName = @"CCHLinkAttributeName";
         NSRange range = rangeValue.rangeValue;
         
         for (NSString *attribute in self.linkTextTouchAttributes) {
-            [attributedText removeAttribute:attribute range:range];
+            if (range.location + range.length <= attributedText.length) {
+                [attributedText removeAttribute:attribute range:range];
+            } else {
+                NSLog(@"重置文本属性时，范围越界，很可能是文本发生变化导致");
+                return ;
+            }
         }
         [attributedText addAttributes:self.linkTextAttributes range:range];
     }
@@ -326,17 +339,12 @@ NSString *const CCHLinkAttributeName = @"CCHLinkAttributeName";
     if ([self.linkDelegate respondsToSelector:@selector(linkTextView:didTapLinkWithValue:)]) {
         for (NSValue *rangeValue in rangeValues) {
             NSRange range = rangeValue.rangeValue;
-            id value = [self.attributedText attribute:CCHLinkAttributeName atIndex:range.location effectiveRange:NULL];
-            [self.linkDelegate linkTextView:self didTapLinkWithValue:value];
+            if (self.attributedText.string.length > range.location) {
+                id value = [self.attributedText attribute:CCHLinkAttributeName atIndex:range.location effectiveRange:NULL];
+                [self.linkDelegate linkTextView:self didTapLinkWithValue:value];
+            }
         }
     }
-//    
-//    [self enumerateLinkRangesContainingLocation:location usingBlock:^(NSRange range) {
-//        if ([self.linkDelegate respondsToSelector:@selector(linkTextView:didTapLinkWithValue:)]) {
-//            id value = [self.attributedText attribute:CCHLinkAttributeName atIndex:range.location effectiveRange:NULL];
-//            [self.linkDelegate linkTextView:self didTapLinkWithValue:value];
-//        }
-//    }];
 }
 
 - (void)didLongPressAtRangeValues:(NSArray *)rangeValues
@@ -358,3 +366,4 @@ NSString *const CCHLinkAttributeName = @"CCHLinkAttributeName";
 }
 
 @end
+
